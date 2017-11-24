@@ -1,0 +1,125 @@
+---
+title: "SIAD: Gráficos de NDVI por Classe de cobertura"
+author: "Oliveira-Santos, Claudinei"
+date: "24 de novembro de 2017"
+output: 
+  html_document: 
+    fig_caption: yes
+    fig_height: 12
+    fig_width: 12
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+
+
+```{r packages, message=FALSE, warning=FALSE, echo=FALSE}
+###
+###
+#'Pacotes
+library(ggplot2)
+require(graphics)
+library(scales)
+library(reshape2)
+
+```
+
+
+
+```{r readData, echo=FALSE, cache=TRUE}
+###
+###
+#'Ler arquivos
+ndvi <- read.csv('dados/SIAD_NDVI_Amostras_Classes.csv')
+```
+
+
+
+```{r figMeanALL, echo=FALSE, cache=TRUE, fig.height=9, fig.width=18, fig.align="center"}
+###
+###
+#'Summary NDVI
+meanNdvi <- colMeans(ndvi[,-c(1:4)])
+sdNdvi <- apply(ndvi[,-c(1:4)], 2, FUN = sd)
+medianNdvi <- apply(ndvi[,-c(1:4)], 2, FUN = median)
+
+###
+###
+#'Graficos do NDVI
+plot(meanNdvi, t = "l", col = "black", lwd = 2, ylim = c(0,1), main = "Média do NDVI de todas as classes")
+apply(ndvi[,-c(1:4)], 1, FUN = lines, col = "gray")
+lines(meanNdvi + sdNdvi, col = "red")
+lines(meanNdvi - sdNdvi, col = "red")
+lines(meanNdvi, t = "l", col = "black", lwd = 2)
+# lines(medianNdvi, t = "l", col = "blue", lwd = 2)
+```
+
+
+
+```{r figMeanByClasses, echo=FALSE, cache=TRUE, fig.height=9, fig.width=18, fig.align="center"}
+classes <- as.character(unique(ndvi$Classe))
+
+for(i in 1:length(classes)){
+ndvi_I <- ndvi[ndvi$Classe == classes[i], -c(1:4)]
+  
+meanNdvi <- colMeans(ndvi_I)
+medianaNdvi <- apply(ndvi_I, 2, FUN = median)
+sdNdvi <- apply(ndvi_I, 2, FUN = sd)
+plot(meanNdvi, t = "l", col = "black", lwd = 2, ylim = c(0,1), main = classes[i])
+apply(ndvi_I, 1, FUN = lines, col = "gray")
+lines(meanNdvi + sdNdvi, col = "red")
+lines(meanNdvi - sdNdvi, col = "red")
+lines(meanNdvi, col = "black")
+# lines(medianaNdvi, col = "blue")
+}
+```
+
+
+
+```{r figMeanByClasses_Split ggplot, include=FALSE, echo=FALSE, cache=TRUE, fig.height=9, fig.width=18, fig.align="center"}
+classes <- as.character(unique(ndvi$Classe))
+
+meanClasses <- as.data.frame(classes)
+meanClasses[,2:397] <- NA
+
+for(i in 1:length(classes)){
+classesNdvi_I <- ndvi[ndvi$Classe == classes[i], -c(1:4)]
+meanClasse_I <- colMeans(classesNdvi_I)
+meanClasses[i,2:397] <- meanClasse_I
+}
+
+meanClassesMelt <- melt(meanClasses, value.name = "Values")
+meanClassesMelt$variable <- as.numeric(gsub("V", "", meanClassesMelt$variable))
+
+ggplot(data = meanClassesMelt, aes(x = variable, y = Values, col = classes))+
+  geom_line()
+
+```
+
+
+
+```{r figMeanByClasses_Split, echo=FALSE, cache=TRUE, fig.height=9, fig.width=18, fig.align="center"}
+classes <- as.character(unique(ndvi$Classe))
+
+meanClasses <- as.data.frame(classes)
+meanClasses[,2:397] <- NA
+
+for(i in 1:length(classes)){
+classesNdvi_I <- ndvi[ndvi$Classe == classes[i], -c(1:4)]
+meanClasse_I <- colMeans(classesNdvi_I)
+meanClasses[i,2:397] <- meanClasse_I
+}
+
+plot(as.numeric(meanClasses[meanClasses$classes == "Desmatamento", -c(1:4)]),
+     t = 'l',
+     col = "red",
+     ylim = c(0,1),
+     ylab = "Ndvi",
+     xlab = "Time",
+     main = "NDVI Médio por Classes")
+lines(as.numeric(meanClasses[meanClasses$classes == "Vegetacao", -c(1:4)]),
+      col = "blue")
+legend("topright", fill = c("red", "blue"), legend = c("Desmatamento", "Falso Desmatamento"))
+```
