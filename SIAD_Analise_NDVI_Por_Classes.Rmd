@@ -100,7 +100,7 @@ ggplot(data = meanClassesMelt, aes(x = variable, y = Values, col = classes))+
 
 
 
-```{r figMeanByClasses_Split, echo=FALSE, cache=TRUE, fig.height=9, fig.width=18, fig.align="center"}
+```{r figMeanByClasses_Split, echo=FALSE, cache=FALSE, fig.height=9, fig.width=18, fig.align="center"}
 classes <- as.character(unique(ndvi$Classe))
 
 meanClasses <- as.data.frame(classes)
@@ -112,14 +112,19 @@ meanClasse_I <- colMeans(classesNdvi_I)
 meanClasses[i,2:397] <- meanClasse_I
 }
 
-plot(as.numeric(meanClasses[meanClasses$classes == "Desmatamento", -c(1:4)]),
+plot(as.numeric(meanClasses[meanClasses$classes == "Vegetação", -c(1:4)]),
      t = 'l',
-     col = "red",
+     col = "darkgreen",
      ylim = c(0,1),
      ylab = "Ndvi",
      xlab = "Time",
      main = "NDVI Médio por Classes")
-lines(as.numeric(meanClasses[meanClasses$classes == "Vegetacao", -c(1:4)]),
-      col = "blue")
-legend("topright", fill = c("red", "blue"), legend = c("Desmatamento", "Falso Desmatamento"))
+lines(as.numeric(meanClasses[meanClasses$classes == "Agricultura", -c(1:4)]), col = "blue")
+lines(as.numeric(meanClasses[meanClasses$classes == "Desmatamento", -c(1:4)]), col = "red")
+lines(as.numeric(meanClasses[meanClasses$classes == "Pastagem", -c(1:4)]), col = "darkorange")
+lines(as.numeric(meanClasses[meanClasses$classes == "Queimada", -c(1:4)]), col = "black")
+legend("topright",
+       fill = c("darkgreen", "blue", "red", "darkorange", "black"),
+       legend = c("Vegetação", "Agricultura", "Desmatamento", "Pastagem", "Queimada"))
+
 ```
